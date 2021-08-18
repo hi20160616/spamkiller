@@ -1,0 +1,22 @@
+{
+    "debug":false,
+    "folder": "./",
+    "filter":{
+	"spams":[
+	    {
+		"keyword": "SpamKeyWord",
+		"star": 0
+	    },
+	    {
+		"keyword": "spam key word",
+		"star": 0
+	    }
+	],
+	"focused":[
+	    {
+		"keyword": "focused",
+		"star": 0
+	    }
+	]
+    }
+}
