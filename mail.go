@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"net/mail"
 	"os"
 	"path/filepath"
@@ -97,7 +96,6 @@ func (m *Mail) analysis() *Mail {
 // folder path should less then 240 bytes,
 // file path should less than 260 bytes
 func (m *Mail) deliver() error {
-	log.Println("rename: ", m.path)
 	tag := func() string {
 		switch m.tag {
 		case FOCUSED:
@@ -115,14 +113,19 @@ func (m *Mail) deliver() error {
 	if len(dstDir) >= 240 {
 		return fmt.Errorf("Too long path: %s", dstDir)
 	}
+	if err := os.MkdirAll(dstDir, 0750); err != nil {
+		return err
+	}
 	dstPath := filepath.Join(dstDir, filepath.Base(m.path))
 	if len(dstPath) >= 260 {
 		return fmt.Errorf("Too long file name: %s", dstPath)
 	}
-	dst, err := os.Open(dstPath)
+	dst, err := os.Create(dstPath)
 	if err != nil {
 		return err
 	}
+	defer dst.Close()
+
 	if _, err := io.Copy(dst, bytes.NewReader(m.raw)); err != nil {
 		return err
 	}

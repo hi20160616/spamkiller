@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestTreat(t *testing.T) {
 	if err := treat("./test"); err != nil {

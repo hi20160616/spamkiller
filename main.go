@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io/fs"
 	"log"
@@ -12,17 +11,22 @@ import (
 )
 
 func main() {
+	defer LogWriter.Close()
 	if len(os.Args) != 2 {
 		os.Exit(1)
 	}
 	configs.V.Folder = os.Args[1]
+	if configs.V.MailSet == "./" {
+		configs.V.MailSet = os.Args[1]
+	}
 	if err := treat(configs.V.Folder); err != nil {
 		fmt.Println(err)
 		log.Println(err)
 	} else {
 		fmt.Println("Done. Press Enter to quit!")
 	}
-	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	// bufio.NewReader(os.Stdin).ReadBytes('\n')
+	fmt.Scanln()
 }
 
 func treat(scanPath string) error {
