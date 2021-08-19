@@ -25,7 +25,7 @@ archives:
       - goos: windows
         format: zip
     files:
-      - LICENSE.txt
+      - LICENSE
       - README.md
       - AddContextMenu.inf
       - DelContextMenu.reg
