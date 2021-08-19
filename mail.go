@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"log"
 	"net/mail"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -93,6 +96,35 @@ func (m *Mail) analysis() *Mail {
 
 // folder path should less then 240 bytes,
 // file path should less than 260 bytes
-func (m *Mail) rename() error {
+func (m *Mail) deliver() error {
+	log.Println("rename: ", m.path)
+	tag := func() string {
+		switch m.tag {
+		case FOCUSED:
+			return "[FOCUSED]"
+		case SPAM:
+			return "[SPAM]"
+		case CONFUSION:
+			return "[CONFUSION]"
+		default:
+			return "[COMMON]"
+		}
+	}
+
+	dstDir := filepath.Join(configs.V.MailSet, tag())
+	if len(dstDir) >= 240 {
+		return fmt.Errorf("Too long path: %s", dstDir)
+	}
+	dstPath := filepath.Join(dstDir, filepath.Base(m.path))
+	if len(dstPath) >= 260 {
+		return fmt.Errorf("Too long file name: %s", dstPath)
+	}
+	dst, err := os.Open(dstPath)
+	if err != nil {
+		return err
+	}
+	if _, err := io.Copy(dst, bytes.NewReader(m.raw)); err != nil {
+		return err
+	}
 	return nil
 }

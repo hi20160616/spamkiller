@@ -1,13 +1,32 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
+
+	"github.com/hi20160616/spamkiller/configs"
 )
 
 func main() {
+	if len(os.Args) == 2 {
+		configs.V.Folder = os.Args[1]
+	}
+	if err := treat(configs.V.Folder); err != nil {
+		fmt.Println(err)
+		log.Println(err)
+	} else {
+		fmt.Println("Done. Press Enter to quit!")
+	}
+	input := bufio.NewScanner(os.Stdin)
+	for input.Scan() {
+		if input.Text() == "\n" {
+			return
+		}
+	}
 }
 
 func treat(scanPath string) error {
@@ -23,8 +42,8 @@ func treat(scanPath string) error {
 		if err != nil {
 			log.Println(err)
 		}
-		// analysis and rename, log out the error
-		log.Println(m.analysis().rename())
+		// analysis and deliver, log out the error
+		log.Println(m.analysis().deliver())
 	}
 	return nil
 }

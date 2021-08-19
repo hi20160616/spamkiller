@@ -18,6 +18,7 @@ type configuration struct {
 	RootPath string
 	Debug    bool
 	Folder   string
+	MailSet  string // to copy treated emls
 	Filter   struct {
 		Spams   []string
 		Focuses []string
@@ -25,7 +26,12 @@ type configuration struct {
 }
 
 func setRootPath() error {
-	V.RootPath = "./"
+	root, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	V.RootPath = root
+
 	if strings.Contains(os.Args[0], ".test") {
 		return rootPath4Test()
 	}
@@ -42,7 +48,8 @@ func load() error {
 		return err
 	}
 	// load focuses.json
-	fJson, err := os.ReadFile(filepath.Join(V.RootPath, "configs/focuses.json"))
+	fp := filepath.Join(V.RootPath, "configs/focuses.json")
+	fJson, err := os.ReadFile(fp)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			log.Println("warning: no focuses.json")
@@ -54,10 +61,11 @@ func load() error {
 		return err
 	}
 	// load spams.json
-	sJson, err := os.ReadFile(filepath.Join(V.RootPath, "configs/spams.json"))
+	sp := filepath.Join(V.RootPath, "configs/spams.json")
+	sJson, err := os.ReadFile(sp)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			log.Println("warning: no focuses.json")
+			log.Println("warning: no spams.json")
 		} else {
 			return err
 		}
@@ -94,7 +102,7 @@ func rootPath4Test() error {
 		n = strings.Count(ps[1], string(os.PathSeparator))
 	}
 	for i := 0; i < n; i++ {
-		V.RootPath = filepath.Join("../", V.RootPath)
+		V.RootPath = filepath.Join("../", "./")
 	}
 	return nil
 }
