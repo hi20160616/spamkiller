@@ -14,12 +14,22 @@ builds:
       - windows
       - darwin
 archives:
-  - replacements:
-      darwin: Darwin
+  - 
+    replacements:
+      darwin: macOS
       linux: Linux
       windows: Windows
-      386: i386
-      amd64: x86_64
+      386: 32-bit
+      amd64: 64-bit
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE.txt
+      - README.md
+      - AddContextMenu.inf
+      - DelContextMenu.reg
+      - configs/*.json
 checksum:
   name_template: 'checksums.txt'
 snapshot:

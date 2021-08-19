@@ -5,5 +5,5 @@ Signature="$Windows NT$"
 AddReg=SpamKiller
 
 [SpamKiller]
-hkcr,"Directory\shell\KillSpams",,," Deal with SpamKiller "
-hkcr,"Directory\shell\KillSpams\command",,,"""%1%\spams_killer.exe"" ""%%1"""
+hkcr,"Directory\shell\SpamKiller",,," Deal with &SpamKiller "
+hkcr,"Directory\shell\SpamKiller\command",,,"""%1%\spamskiller.exe"" ""%%1"""
