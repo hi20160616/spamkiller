@@ -2,10 +2,10 @@ package configs
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
@@ -19,23 +19,13 @@ type configuration struct {
 	Debug    bool
 	Folder   string
 	Filter   struct {
-		Spams []struct {
-			Keyword string `json:"keyword"`
-			Star    int    `json:"star"`
-		} `json:"spams"`
-		Focused []struct {
-			Keyword string `json:"keyword"`
-			Star    int    `json:"star"`
-		} `json:"focused"`
+		Spams   []string
+		Focuses []string
 	} `json:"filter"`
 }
 
 func setRootPath() error {
-	root, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	V.RootPath = root
+	V.RootPath = "./"
 	if strings.Contains(os.Args[0], ".test") {
 		return rootPath4Test()
 	}
@@ -48,7 +38,40 @@ func load() error {
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(f, V)
+	if err = json.Unmarshal(f, V); err != nil {
+		return err
+	}
+	// load focuses.json
+	fJson, err := os.ReadFile(filepath.Join(V.RootPath, "configs/focuses.json"))
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			log.Println("warning: no focuses.json")
+		} else {
+			return err
+		}
+	}
+	if err = json.Unmarshal(fJson, &V.Filter.Focuses); err != nil {
+		return err
+	}
+	// load spams.json
+	sJson, err := os.ReadFile(filepath.Join(V.RootPath, "configs/spams.json"))
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			log.Println("warning: no focuses.json")
+		} else {
+			return err
+		}
+	}
+	if err = json.Unmarshal(sJson, &V.Filter.Spams); err != nil {
+		return err
+	}
+
+	// write to configs.json
+	data, err := json.MarshalIndent(V, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(cf, data, 0755)
 }
 
 func init() {
@@ -61,12 +84,14 @@ func init() {
 }
 
 func rootPath4Test() error {
-	ps := strings.Split(V.RootPath, ProjectName)
+	root, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	ps := strings.Split(root, ProjectName)
 	n := 0
-	if runtime.GOOS == "windows" {
-		n = strings.Count(ps[1], "\\")
-	} else {
-		n = strings.Count(ps[1], "/")
+	if len(ps) > 1 {
+		n = strings.Count(ps[1], string(os.PathSeparator))
 	}
 	for i := 0; i < n; i++ {
 		V.RootPath = filepath.Join("../", V.RootPath)

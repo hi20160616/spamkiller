@@ -74,12 +74,12 @@ func NewMail(mailPath string) (*Mail, error) {
 func (m *Mail) analysis() *Mail {
 	flag := COMMON
 	for _, kw := range configs.V.Filter.Spams {
-		if strings.Contains(m.sraw, kw.Keyword) {
+		if strings.Contains(m.sraw, kw) {
 			flag = SPAM
 		}
 	}
-	for _, kw := range configs.V.Filter.Focused {
-		if strings.Contains(m.sraw, kw.Keyword) {
+	for _, kw := range configs.V.Filter.Focuses {
+		if strings.Contains(m.sraw, kw) {
 			if flag == SPAM {
 				flag = CONFUSION
 			} else {
