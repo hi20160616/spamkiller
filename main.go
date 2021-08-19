@@ -12,21 +12,17 @@ import (
 )
 
 func main() {
-	if len(os.Args) == 2 {
-		configs.V.Folder = os.Args[1]
+	if len(os.Args) != 2 {
+		os.Exit(1)
 	}
+	configs.V.Folder = os.Args[1]
 	if err := treat(configs.V.Folder); err != nil {
 		fmt.Println(err)
 		log.Println(err)
 	} else {
 		fmt.Println("Done. Press Enter to quit!")
 	}
-	input := bufio.NewScanner(os.Stdin)
-	for input.Scan() {
-		if input.Text() == "\n" {
-			return
-		}
-	}
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
 }
 
 func treat(scanPath string) error {
@@ -51,7 +47,7 @@ func treat(scanPath string) error {
 func getEmlPathes(scanPath string) ([]string, error) {
 	subDirToSkip := "skip"
 	emls := make([]string, 0)
-	err := filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
+	if err := filepath.WalkDir(scanPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 			return err
@@ -60,11 +56,11 @@ func getEmlPathes(scanPath string) ([]string, error) {
 			fmt.Printf("skipping a dir without errors: %+v \n", d.Name())
 			return filepath.SkipDir
 		}
-		fmt.Printf("visited file or dir: %q\n", path)
-		emls = append(emls, path)
+		if d.Type().IsRegular() {
+			emls = append(emls, path)
+		}
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return nil, err
 	}
 	return emls, nil
