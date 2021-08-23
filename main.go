@@ -43,7 +43,10 @@ func treat(scanPath string) error {
 			log.Println(err)
 		}
 		// analysis and deliver, log out the error
-		log.Println(m.analysis().deliver())
+		if err := m.analysis().deliver(); err != nil {
+			return err
+		}
+		// log.Println(m.analysis().deliver())
 	}
 	return nil
 }
