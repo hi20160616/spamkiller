@@ -9,6 +9,7 @@ func TestLoad(t *testing.T) {
 	if err := load(); err != nil {
 		t.Error(err)
 	}
+	fmt.Println(V.Drop)
 	for _, e := range V.Filter.Spams {
 		fmt.Println(e)
 	}

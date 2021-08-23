@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	defer LogWriter.Close()
+	defer configs.LogWriter.Close()
 	if len(os.Args) != 2 {
 		os.Exit(1)
 	}

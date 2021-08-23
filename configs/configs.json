@@ -1,18 +1,6 @@
 {
-  "RootPath": "/Users/wedojava/go/src/github.com/hi20160616/spamkiller",
   "Debug": false,
   "Folder": "./",
   "MailSet": "./",
-  "filter": {
-    "Spams": [
-      "keyword1",
-      "keyword2",
-      "keyword3"
-    ],
-    "Focuses": [
-      "keyword1",
-      "keyword2",
-      "keyword3"
-    ]
-  }
+  "DropDaysAgo": 2
 }

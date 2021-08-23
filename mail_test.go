@@ -37,7 +37,7 @@ func TestDeliver(t *testing.T) {
 		t.Error(err)
 	}
 
-	defer LogWriter.Close()
+	defer configs.LogWriter.Close()
 }
 
 func TestAnalysis(t *testing.T) {
@@ -68,5 +68,5 @@ func TestAnalysis(t *testing.T) {
 		t.Errorf("want: 2, got: %d", m.tag)
 	}
 
-	defer LogWriter.Close()
+	defer configs.LogWriter.Close()
 }

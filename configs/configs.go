@@ -3,23 +3,28 @@ package configs
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var (
 	ProjectName = "spamkiller"
 	V           = &configuration{}
+	LogWriter   = &os.File{}
 )
 
 type configuration struct {
-	RootPath string
-	Debug    bool
-	Folder   string
-	MailSet  string // to copy treated emls
-	Filter   struct {
+	RootPath    string
+	Debug       bool
+	Folder      string
+	MailSet     string // to copy treated emls
+	DropDaysAgo int    `json:"DropDaysAgo"`
+	Drop        time.Time
+	Filter      struct {
 		Spams   []string
 		Focuses []string
 	} `json:"filter"`
@@ -31,6 +36,7 @@ func setRootPath() error {
 		return err
 	}
 	V.RootPath = root
+	fmt.Println(V.RootPath)
 
 	if strings.Contains(os.Args[0], ".test") {
 		return rootPath4Test()
@@ -47,6 +53,10 @@ func load() error {
 	if err = json.Unmarshal(f, V); err != nil {
 		return err
 	}
+
+	// Drop
+	V.Drop = time.Now().AddDate(0, 0, -V.DropDaysAgo)
+
 	// load focuses.json
 	fp := filepath.Join(V.RootPath, "configs/focuses.json")
 	fJson, err := os.ReadFile(fp)
@@ -60,6 +70,7 @@ func load() error {
 	if err = json.Unmarshal(fJson, &V.Filter.Focuses); err != nil {
 		return err
 	}
+
 	// load spams.json
 	sp := filepath.Join(V.RootPath, "configs/spams.json")
 	sJson, err := os.ReadFile(sp)
@@ -83,11 +94,16 @@ func load() error {
 }
 
 func init() {
+	LogWriter, err := os.OpenFile(filepath.Join("./", "log.txt"), os.O_CREATE|os.O_APPEND|os.O_RDWR, 0755)
+	if err != nil {
+		log.Println(err)
+	}
+	log.SetOutput(LogWriter)
 	if err := setRootPath(); err != nil {
-		log.Printf("configs init error: %v", err)
+		log.Printf("configs init error: %v\n", err)
 	}
 	if err := load(); err != nil {
-		log.Printf("configs load error: %v", err)
+		log.Printf("configs load error: %v\n", err)
 	}
 }
 

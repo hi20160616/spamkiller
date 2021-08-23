@@ -18,6 +18,7 @@ const (
 	FOCUSED
 	SPAM
 	CONFUSION
+	DROP
 )
 
 type Mail struct {
@@ -75,6 +76,10 @@ func NewMail(mailPath string) (*Mail, error) {
 
 func (m *Mail) analysis() *Mail {
 	flag := COMMON
+	if m.date.Before(configs.V.Drop) {
+		m.tag = DROP
+		return m
+	}
 	for _, kw := range configs.V.Filter.Spams {
 		if strings.Contains(m.sraw, kw) {
 			flag = SPAM
@@ -96,6 +101,9 @@ func (m *Mail) analysis() *Mail {
 // folder path should less then 240 bytes,
 // file path should less than 260 bytes
 func (m *Mail) deliver() error {
+	if m.tag == DROP {
+		return nil // Drop the mail, just ignore it
+	}
 	tag := func() string {
 		switch m.tag {
 		case FOCUSED:
