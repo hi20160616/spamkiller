@@ -1,5 +1,5 @@
 # spamkiller
-A mile filter to trash spams
+A mail filter to categorize ".eml" files.
 
 
 # Quick Start
@@ -21,5 +21,5 @@ This tool is treat for eml files to categorize. You can config the things in **c
 2. `focuses.json`: is a list to save the keywords, if shot, the eml will delivery to folder **[FOCUSED]**.
 3. `spams.json`: is a list to save the keywords, if shot, the eml will delivery to folder **[SPAM]**.
 
-## Notice
-If anything wrong, please look up the `log.txt`, that was generated at folder where is `spamkiller.exe`, also, the terminal window will print error stacks, that can help me fix some bugs.
+# Notice
+If anything wrong, please look up the "log.txt", that was generated at folder where is "spamkiller.exe", also, the terminal window will print error stacks, that can help me fix some bugs.
