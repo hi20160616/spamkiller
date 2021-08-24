@@ -1,6 +1,7 @@
 {
   "Debug": false,
+  "Verbose": false,
   "Folder": "./",
-  "MailSet": "./",
+  "Result": "./",
   "DropDaysAgo": 2
 }

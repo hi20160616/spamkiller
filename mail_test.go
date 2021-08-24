@@ -8,7 +8,7 @@ import (
 )
 
 var m *Mail = func() *Mail {
-	configs.V.MailSet = "./test"
+	configs.V.Result = "./test"
 	a, err := NewMail("./test/test_common.eml")
 	if err != nil {
 		fmt.Print(err)

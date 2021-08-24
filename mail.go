@@ -117,7 +117,7 @@ func (m *Mail) deliver() error {
 		}
 	}
 
-	dstDir := filepath.Join(configs.V.MailSet, tag())
+	dstDir := filepath.Join(configs.V.Result, tag())
 	if len(dstDir) >= 240 {
 		return fmt.Errorf("Too long path: %s", dstDir)
 	}

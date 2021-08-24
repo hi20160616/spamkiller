@@ -23,8 +23,9 @@ var (
 type configuration struct {
 	RootPath    string
 	Debug       bool
+	Verbose     bool // if true, prompt enter to exit.
 	Folder      string
-	MailSet     string // to copy treated emls
+	Result      string // to copy treated emls
 	DropDaysAgo int    `json:"DropDaysAgo"`
 	Drop        time.Time
 	Filter      struct {

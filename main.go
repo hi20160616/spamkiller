@@ -16,17 +16,21 @@ func main() {
 		os.Exit(1)
 	}
 	configs.V.Folder = os.Args[1]
-	if configs.V.MailSet == "./" {
-		configs.V.MailSet = os.Args[1]
+	if configs.V.Result == "./" {
+		configs.V.Result = os.Args[1]
 	}
 	if err := treat(configs.V.Folder); err != nil {
 		fmt.Println(err)
 		log.Println(err)
-	} else {
-		fmt.Println("Done. Press Enter to quit!")
+		fmt.Println("Sth error. Press Enter to quit!")
+		// bufio.NewReader(os.Stdin).ReadBytes('\n')
+		fmt.Scanln()
 	}
-	// bufio.NewReader(os.Stdin).ReadBytes('\n')
-	fmt.Scanln()
+	if configs.V.Verbose {
+		fmt.Println("Done. Press Enter to quit!")
+		// bufio.NewReader(os.Stdin).ReadBytes('\n')
+		fmt.Scanln()
+	}
 }
 
 func treat(scanPath string) error {
@@ -38,15 +42,17 @@ func treat(scanPath string) error {
 	// 2. scan emls and compare emls and filter
 	for _, ep := range emlPathes {
 		// new mail
+		if filepath.Ext(ep) != ".eml" {
+			continue
+		}
 		m, err := NewMail(ep)
 		if err != nil {
 			log.Println(err)
 		}
 		// analysis and deliver, log out the error
 		if err := m.analysis().deliver(); err != nil {
-			return err
+			log.Println(err)
 		}
-		// log.Println(m.analysis().deliver())
 	}
 	return nil
 }
