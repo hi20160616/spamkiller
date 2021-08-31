@@ -9,9 +9,9 @@ import (
 
 var m *Mail = func() *Mail {
 	configs.V.Result = "./test"
-	a, err := NewMail("./test/test_common.eml")
-	if err != nil {
-		fmt.Print(err)
+	a := NewMail("./test/test_common.eml")
+	if a.err != nil {
+		fmt.Print(a.err)
 	}
 	return a
 }()

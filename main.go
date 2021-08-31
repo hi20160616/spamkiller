@@ -41,12 +41,12 @@ func treat(scanPath string) error {
 	}
 	// 2. scan emls and compare emls and filter
 	for _, ep := range emlPathes {
-		// new mail
 		if filepath.Ext(ep) != ".eml" {
 			continue
 		}
-		m, err := NewMail(ep)
-		if err != nil {
+		// new mail
+		m := NewMail(ep)
+		if m.err != nil {
 			log.Println(err)
 		}
 		// analysis and deliver, log out the error

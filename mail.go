@@ -11,10 +11,12 @@ import (
 	"time"
 
 	"github.com/hi20160616/spamkiller/configs"
+	"github.com/pkg/errors"
 )
 
 const (
-	COMMON int = iota
+	ERR int = iota
+	COMMON
 	FOCUSED
 	SPAM
 	CONFUSION
@@ -31,9 +33,10 @@ type Mail struct {
 	to            []*mail.Address
 	subject, body string
 	tag           int
+	err           error
 }
 
-func NewMail(mailPath string) (*Mail, error) {
+func NewMail2(mailPath string) (*Mail, error) {
 	r, err := os.ReadFile(mailPath)
 	if err != nil {
 		return nil, err
@@ -74,8 +77,53 @@ func NewMail(mailPath string) (*Mail, error) {
 	}, nil
 }
 
+func NewMail(mailPath string) *Mail {
+	r, err := os.ReadFile(mailPath)
+	if err != nil {
+		return &Mail{err: errors.WithMessagef(err, "ReadFile error: %s", mailPath)}
+	}
+	msg, err := mail.ReadMessage(bytes.NewReader(r))
+	if err != nil {
+		return &Mail{err: errors.WithMessagef(err, "ReadMessage error: %s", mailPath)}
+	}
+	subject := msg.Header.Get("Subject")
+	body, err := io.ReadAll(msg.Body)
+	if err != nil {
+		return &Mail{err: errors.WithMessagef(err, "Read body error: %s", mailPath)}
+	}
+	date, err := msg.Header.Date()
+	if err != nil {
+		return &Mail{err: errors.WithMessagef(err, "Read Date error: %s", mailPath)}
+	}
+	from, err := msg.Header.AddressList("From")
+	if err != nil {
+		return &Mail{err: errors.WithMessagef(err, "Read Address From error: %s", mailPath)}
+	}
+	to, err := msg.Header.AddressList("To")
+	if err != nil {
+		return &Mail{err: errors.WithMessagef(err, "Read Address To error: %s", mailPath)}
+	}
+	sraw := msg.Header.Get("From") + msg.Header.Get("To") +
+		subject + " " + string(body)
+	return &Mail{
+		path:    mailPath,
+		raw:     r,
+		sraw:    sraw,
+		msg:     msg,
+		date:    date,
+		from:    from[0],
+		to:      to,
+		subject: subject,
+		body:    string(body),
+	}
+}
+
 func (m *Mail) analysis() *Mail {
 	flag := COMMON
+	if m.err != nil {
+		m.tag = ERR
+		return m
+	}
 	if m.date.Before(configs.V.Drop) {
 		m.tag = DROP
 		return m
@@ -106,6 +154,8 @@ func (m *Mail) deliver() error {
 	}
 	tag := func() string {
 		switch m.tag {
+		case ERR:
+			return "[ERROR]"
 		case FOCUSED:
 			return "[FOCUSED]"
 		case SPAM:
