@@ -114,12 +114,13 @@ func load() error {
 		return err
 	}
 
-	// write to configs.json
-	data, err := json.MarshalIndent(V, "", "  ")
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(cf, data, 0755)
+	// // write to configs.json
+	// data, err := json.MarshalIndent(V, "", "  ")
+	// if err != nil {
+	//         return err
+	// }
+	// return os.WriteFile(cf, data, 0755)
+	return nil
 }
 
 func init() {
