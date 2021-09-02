@@ -1,6 +1,7 @@
 {
   "Debug": false,
   "Verbose": false,
+  "LogName":"log.txt",
   "Folder": "./",
   "Result": "./",
   "DropDaysAgo": 2

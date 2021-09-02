@@ -6,21 +6,23 @@ import (
 )
 
 func TestLoad(t *testing.T) {
-	if err := load(); err != nil {
+	cfg := &Config{}
+	if err := setRootPath(cfg).load(); err != nil {
 		t.Error(err)
 	}
-	fmt.Println(V.Drop)
-	for _, e := range V.Filter.Spams {
+	fmt.Println(cfg.Drop)
+	for _, e := range cfg.Filter.Spams {
 		fmt.Println(e)
 	}
-	for _, e := range V.Filter.Focuses {
+	for _, e := range cfg.Filter.Focuses {
 		fmt.Println(e)
 	}
 }
 
 func TestRootPath4Test(t *testing.T) {
-	if err := rootPath4Test(); err != nil {
-		t.Error(err)
+	cfg := rootPath4Test(&Config{})
+	if cfg.Err != nil {
+		t.Error(cfg.Err)
 	}
-	fmt.Println(V.RootPath)
+	fmt.Println(cfg.RootPath)
 }
