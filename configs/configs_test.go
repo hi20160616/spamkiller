@@ -6,7 +6,7 @@ import (
 )
 
 func TestLoad(t *testing.T) {
-	cfg := &Config{}
+	cfg := &Config{ProjectName: "spamkiller"}
 	if err := setRootPath(cfg).load(); err != nil {
 		t.Error(err)
 	}

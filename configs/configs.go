@@ -22,6 +22,7 @@ type Config struct {
 	Debug       bool
 	Verbose     bool // if true, prompt enter to exit.
 	LogName     string
+	MailTypes   []string
 	Folder      string
 	Result      string // to copy treated emls
 	DropDaysAgo int    `json:"DropDaysAgo"`
@@ -33,64 +34,33 @@ type Config struct {
 	Err error
 }
 
-func NewConfig(projectName string) (*Config, error) {
-	cfg := &Config{ProjectName: projectName}
-	cfg = setRootPath(cfg).load()
-	if cfg.Err != nil {
-		// log.Printf("configs load error: %v\n", cfg.Err)
-		return nil, cfg.Err
-	}
-	if err := initLog(cfg); err != nil {
-		return nil, err
-	}
-	return cfg, nil
-}
-
-func initLog(cfg *Config) error {
-	LogWriter, err := os.OpenFile(
-		filepath.Join(cfg.RootPath, cfg.LogName),
-		os.O_CREATE|os.O_APPEND|os.O_RDWR, 0755)
-	if err != nil {
-		return err
-	}
-	log.SetOutput(LogWriter)
-	return nil
-}
-
-// func setRootPath(cfg *Config) *Config {
-//         if runtime.GOOS == "Linux" {
-//                 cfg.RootPath, cfg.Err = os.Getwd()
-//                 if cfg.Err != nil {
-//                         return cfg
-//                 }
+// func NewConfig(projectName string) (*Config, error) {
+//         cfg := &Config{ProjectName: projectName}
+//         cfg = setRootPath(cfg).load()
+//         if cfg.Err != nil {
+//                 // log.Printf("configs load error: %v\n", cfg.Err)
+//                 return nil, cfg.Err
 //         }
-//         if runtime.GOOS == "windows" {
-//                 cfg.RootPath, cfg.Err = readKey()
-//                 if cfg.Err != nil {
-//                         return cfg
-//                 }
-//                 cfg.RootPath = filepath.Dir(cfg.RootPath)
+//         if err := initLog(cfg); err != nil {
+//                 return nil, err
 //         }
-//         if strings.Contains(os.Args[0], ".test") {
-//                 return rootPath4Test(cfg)
-//         }
-//         return cfg
+//         return cfg, nil
 // }
-//
-// func readKey() (string, error) {
-//         k, err := registry.OpenKey(registry.CLASSES_ROOT, `Directory\shell\SpamKiller\command`, registry.QUERY_VALUE)
+
+// func initLog(cfg *Config) error {
+//         LogWriter, err := os.OpenFile(
+//                 filepath.Join(cfg.RootPath, cfg.LogName),
+//                 os.O_CREATE|os.O_APPEND|os.O_RDWR, 0755)
 //         if err != nil {
-//                 return "", err
+//                 return err
 //         }
-//         defer k.Close()
-//
-//         s, _, err := k.GetStringValue("")
-//         if err != nil {
-//                 return "", err
-//         }
-//         s = strings.Split(s, " ")[0]
-//         return strings.ReplaceAll(s, "\"", ""), nil
+//         log.SetOutput(LogWriter)
+//         return nil
 // }
+
+func NewConfig(projectName string) *Config {
+	return setRootPath(&Config{ProjectName: projectName}).load()
+}
 
 func rootPath4Test(cfg *Config) *Config {
 	cfg.RootPath, cfg.Err = os.Getwd()

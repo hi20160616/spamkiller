@@ -2,8 +2,11 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
+	"io/fs"
+	"log"
 	"net/mail"
 	"os"
 	"path/filepath"
@@ -23,8 +26,81 @@ const (
 	DROP
 )
 
+type Mails struct {
+	cfg   *configs.Config
+	src   string // mails folder
+	mails []*Mail
+	err   error
+	log   *log.Logger
+}
+
+func NewMails(ctx context.Context, cfg *configs.Config, log *log.Logger, src string) *Mails {
+	return &Mails{
+		cfg: cfg,
+		log: log,
+		src: src,
+	}
+}
+
+func (ms *Mails) walkSrc(ctx context.Context) *Mails {
+	subDirToSkip := "skip"
+	ms.err = filepath.WalkDir(
+		ms.src, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				ms.log.Printf(
+					"prevent panic by handling failure accessing a path %q: %v\n",
+					path, err)
+				return err
+			}
+			if d.IsDir() && d.Name() == subDirToSkip {
+				ms.log.Printf(
+					"skipping a dir without errors: %+v \n", d.Name())
+				return filepath.SkipDir
+			}
+			if d.Type().IsRegular() {
+				if err := treat(ctx, ms.cfg, ms.log, path); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+	return ms
+}
+
+func trueType(cfg *configs.Config, src string) error {
+	ext := filepath.Ext(src)
+	trueType := func() bool {
+		for _, e := range cfg.MailTypes {
+			if e == ext {
+				return true
+			}
+		}
+		return false
+	}()
+	if !trueType {
+		return errors.WithMessagef(ErrNotSupportExt,
+			"bypass this file: %s", src)
+	}
+	return nil
+}
+
+func treat(ctx context.Context, cfg *configs.Config, log *log.Logger, src string) error {
+	if err := trueType(cfg, src); err != nil {
+		return err
+	}
+	// new mail
+	m := NewMail(ctx, cfg, log, src)
+	if m.err != nil {
+		return m.err
+	}
+	// analysis and deliver, log out the error
+	return m.analysis().deliver()
+}
+
 type Mail struct {
-	path          string
+	cfg           *configs.Config
+	log           *log.Logger
+	src           string // source path
 	raw           []byte
 	sraw          string
 	msg           *mail.Message
@@ -36,77 +112,41 @@ type Mail struct {
 	err           error
 }
 
-func NewMail2(mailPath string) (*Mail, error) {
+func NewMail(ctx context.Context, cfg *configs.Config, log *log.Logger, mailPath string) *Mail {
+	rtErr := func(err error) *Mail {
+		return &Mail{src: mailPath, err: err}
+	}
 	r, err := os.ReadFile(mailPath)
 	if err != nil {
-		return nil, err
+		return rtErr(errors.WithMessagef(err, "ReadFile error: %s", mailPath))
 	}
 	msg, err := mail.ReadMessage(bytes.NewReader(r))
 	if err != nil {
-		return nil, err
+		return rtErr(errors.WithMessagef(err, "ReadMessage error: %s", mailPath))
 	}
 	subject := msg.Header.Get("Subject")
 	body, err := io.ReadAll(msg.Body)
 	if err != nil {
-		return nil, err
+		return rtErr(errors.WithMessagef(err, "Read body error: %s", mailPath))
 	}
 	date, err := msg.Header.Date()
 	if err != nil {
-		return nil, err
+		return rtErr(errors.WithMessagef(err, "Read Date error: %s", mailPath))
 	}
 	from, err := msg.Header.AddressList("From")
 	if err != nil {
-		return nil, err
+		return rtErr(errors.WithMessagef(err, "Read Address From error: %s", mailPath))
 	}
 	to, err := msg.Header.AddressList("To")
 	if err != nil {
-		return nil, err
+		return rtErr(errors.WithMessagef(err, "Read Address To error: %s", mailPath))
 	}
 	sraw := msg.Header.Get("From") + msg.Header.Get("To") +
 		subject + " " + string(body)
 	return &Mail{
-		path:    mailPath,
-		raw:     r,
-		sraw:    sraw,
-		msg:     msg,
-		date:    date,
-		from:    from[0],
-		to:      to,
-		subject: subject,
-		body:    string(body),
-	}, nil
-}
-
-func NewMail(mailPath string) *Mail {
-	r, err := os.ReadFile(mailPath)
-	if err != nil {
-		return &Mail{err: errors.WithMessagef(err, "ReadFile error: %s", mailPath)}
-	}
-	msg, err := mail.ReadMessage(bytes.NewReader(r))
-	if err != nil {
-		return &Mail{err: errors.WithMessagef(err, "ReadMessage error: %s", mailPath)}
-	}
-	subject := msg.Header.Get("Subject")
-	body, err := io.ReadAll(msg.Body)
-	if err != nil {
-		return &Mail{err: errors.WithMessagef(err, "Read body error: %s", mailPath)}
-	}
-	date, err := msg.Header.Date()
-	if err != nil {
-		return &Mail{err: errors.WithMessagef(err, "Read Date error: %s", mailPath)}
-	}
-	from, err := msg.Header.AddressList("From")
-	if err != nil {
-		return &Mail{err: errors.WithMessagef(err, "Read Address From error: %s", mailPath)}
-	}
-	to, err := msg.Header.AddressList("To")
-	if err != nil {
-		return &Mail{err: errors.WithMessagef(err, "Read Address To error: %s", mailPath)}
-	}
-	sraw := msg.Header.Get("From") + msg.Header.Get("To") +
-		subject + " " + string(body)
-	return &Mail{
-		path:    mailPath,
+		cfg:     cfg,
+		log:     log,
+		src:     mailPath,
 		raw:     r,
 		sraw:    sraw,
 		msg:     msg,
@@ -124,16 +164,16 @@ func (m *Mail) analysis() *Mail {
 		m.tag = ERR
 		return m
 	}
-	if m.date.Before(configs.V.Drop) {
+	if m.date.Before(m.cfg.Drop) {
 		m.tag = DROP
 		return m
 	}
-	for _, kw := range configs.V.Filter.Spams {
+	for _, kw := range m.cfg.Filter.Spams {
 		if strings.Contains(m.sraw, kw) {
 			flag = SPAM
 		}
 	}
-	for _, kw := range configs.V.Filter.Focuses {
+	for _, kw := range m.cfg.Filter.Focuses {
 		if strings.Contains(m.sraw, kw) {
 			if flag == SPAM {
 				flag = CONFUSION
@@ -167,14 +207,14 @@ func (m *Mail) deliver() error {
 		}
 	}
 
-	dstDir := filepath.Join(configs.V.Result, tag())
+	dstDir := filepath.Join(m.cfg.Result, tag())
 	if len(dstDir) >= 240 {
 		return fmt.Errorf("Too long path: %s", dstDir)
 	}
 	if err := os.MkdirAll(dstDir, 0750); err != nil {
 		return err
 	}
-	dstPath := filepath.Join(dstDir, filepath.Base(m.path))
+	dstPath := filepath.Join(dstDir, filepath.Base(m.src))
 	if len(dstPath) >= 260 {
 		return fmt.Errorf("Too long file name: %s", dstPath)
 	}

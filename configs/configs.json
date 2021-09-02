@@ -2,6 +2,7 @@
   "Debug": false,
   "Verbose": false,
   "LogName":"log.txt",
+  "MailTypes":[".eml"],
   "Folder": "./",
   "Result": "./",
   "DropDaysAgo": 2
