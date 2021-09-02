@@ -59,7 +59,8 @@ func (ms *Mails) walkSrc(ctx context.Context) *Mails {
 			}
 			if d.Type().IsRegular() {
 				if err := treat(ctx, ms.cfg, ms.log, path); err != nil {
-					return err
+					ms.log.Println(err)
+					// return err
 				}
 			}
 			return nil
@@ -91,7 +92,11 @@ func treat(ctx context.Context, cfg *configs.Config, log *log.Logger, src string
 	// new mail
 	m := NewMail(ctx, cfg, log, src)
 	if m.err != nil {
-		return m.err
+		// if m.log != nil {
+		//         m.log.Println(m.err)
+		// }
+		// log.Println(m.err)
+		m.log.Println(m.err)
 	}
 	// analysis and deliver, log out the error
 	return m.analysis().deliver()
@@ -114,7 +119,7 @@ type Mail struct {
 
 func NewMail(ctx context.Context, cfg *configs.Config, log *log.Logger, mailPath string) *Mail {
 	rtErr := func(err error) *Mail {
-		return &Mail{src: mailPath, err: err}
+		return &Mail{src: mailPath, cfg: cfg, log: log, err: err}
 	}
 	r, err := os.ReadFile(mailPath)
 	if err != nil {

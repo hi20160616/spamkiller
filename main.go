@@ -4,12 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
-
-	"github.com/hi20160616/spamkiller/configs"
 )
 
 func main() {
-	defer configs.LogWriter.Close()
 	if len(os.Args) != 2 {
 		os.Exit(1)
 	}

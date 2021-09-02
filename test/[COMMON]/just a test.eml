@@ -1,0 +1,19 @@
+MIME-Version: 1.0
+Date: Tue, 24 Aug 2021 11:48:21 +0800
+Message-ID: <CAJxh5Yp-u5AdA9+o1OSr6qN1bsL5BW=j+axA2ZiN8pCAjGphZA@mail.gmail.com>
+Subject: just a test
+From: Faradff cayatsfc <cayatsfcfaradff@gmail.com>
+To: cayatsfcfaradff@gmail.com
+Content-Type: multipart/alternative; boundary="00000000000051b61105ca46010e"
+
+--00000000000051b61105ca46010e
+Content-Type: text/plain; charset="UTF-8"
+
+this is a test mail.
+
+--00000000000051b61105ca46010e
+Content-Type: text/html; charset="UTF-8"
+
+<div dir="ltr">this is a test mail.</div>
+
+--00000000000051b61105ca46010e--

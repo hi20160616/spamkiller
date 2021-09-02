@@ -11,10 +11,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	LogWriter = &os.File{}
-)
-
 type Config struct {
 	ProjectName string
 	RootPath    string
@@ -33,30 +29,6 @@ type Config struct {
 	} `json:"filter"`
 	Err error
 }
-
-// func NewConfig(projectName string) (*Config, error) {
-//         cfg := &Config{ProjectName: projectName}
-//         cfg = setRootPath(cfg).load()
-//         if cfg.Err != nil {
-//                 // log.Printf("configs load error: %v\n", cfg.Err)
-//                 return nil, cfg.Err
-//         }
-//         if err := initLog(cfg); err != nil {
-//                 return nil, err
-//         }
-//         return cfg, nil
-// }
-
-// func initLog(cfg *Config) error {
-//         LogWriter, err := os.OpenFile(
-//                 filepath.Join(cfg.RootPath, cfg.LogName),
-//                 os.O_CREATE|os.O_APPEND|os.O_RDWR, 0755)
-//         if err != nil {
-//                 return err
-//         }
-//         log.SetOutput(LogWriter)
-//         return nil
-// }
 
 func NewConfig(projectName string) *Config {
 	return setRootPath(&Config{ProjectName: projectName}).load()
@@ -97,8 +69,11 @@ func (c *Config) load() *Config {
 	}
 	c.Debug = cfgTemp.Debug
 	c.Verbose = cfgTemp.Verbose
+	c.LogName = cfgTemp.LogName
+	c.ProjectName = cfgTemp.ProjectName
 	c.Folder = cfgTemp.Folder
 	c.Result = cfgTemp.Result
+	c.MailTypes = cfgTemp.MailTypes
 	c.DropDaysAgo = cfgTemp.DropDaysAgo
 
 	// Drop
