@@ -26,15 +26,18 @@ const (
 	DROP
 )
 
+type MailsPath string
+
 type Mails struct {
 	cfg   *configs.Config
-	src   string // mails folder
+	src   MailsPath
 	mails []*Mail
 	err   error
 	log   *log.Logger
 }
 
-func NewMails(ctx context.Context, cfg *configs.Config, log *log.Logger, src string) *Mails {
+func NewMails(ctx context.Context, cfg *configs.Config, log *log.Logger, src MailsPath) *Mails {
+	cfg.Folder = string(src)
 	return &Mails{
 		cfg: cfg,
 		log: log,
@@ -45,7 +48,7 @@ func NewMails(ctx context.Context, cfg *configs.Config, log *log.Logger, src str
 func (ms *Mails) walkSrc(ctx context.Context) *Mails {
 	subDirToSkip := "skip"
 	ms.err = filepath.WalkDir(
-		ms.src, func(path string, d fs.DirEntry, err error) error {
+		string(ms.src), func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				ms.log.Printf(
 					"prevent panic by handling failure accessing a path %q: %v\n",
@@ -92,11 +95,10 @@ func treat(ctx context.Context, cfg *configs.Config, log *log.Logger, src string
 	// new mail
 	m := NewMail(ctx, cfg, log, src)
 	if m.err != nil {
-		// if m.log != nil {
-		//         m.log.Println(m.err)
-		// }
-		// log.Println(m.err)
-		m.log.Println(m.err)
+		if m.log != nil {
+			m.log.Println(m.err)
+		}
+		log.Println(m.err)
 	}
 	// analysis and deliver, log out the error
 	return m.analysis().deliver()
@@ -223,6 +225,7 @@ func (m *Mail) deliver() error {
 	if len(dstPath) >= 260 {
 		return fmt.Errorf("Too long file name: %s", dstPath)
 	}
+	fmt.Println(dstPath)
 	dst, err := os.Create(dstPath)
 	if err != nil {
 		return err

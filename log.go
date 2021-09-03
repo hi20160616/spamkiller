@@ -15,5 +15,5 @@ func NewLog(cfg *configs.Config) (*log.Logger, error) {
 	if err != nil {
 		return nil, err
 	}
-	return log.New(logWriter, "[SK]", log.LstdFlags), nil
+	return log.New(logWriter, "[SK] ", log.LstdFlags), nil
 }

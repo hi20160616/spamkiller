@@ -13,12 +13,12 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeMails(ctx context.Context, projectName string) (*Mails, error) {
+func InitializeMails(ctx context.Context, projectName string, src MailsPath) (*Mails, error) {
 	config := configs.NewConfig(projectName)
 	logger, err := NewLog(config)
 	if err != nil {
 		return nil, err
 	}
-	mails := NewMails(ctx, config, logger, projectName)
+	mails := NewMails(ctx, config, logger, src)
 	return mails, nil
 }

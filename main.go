@@ -10,7 +10,7 @@ func main() {
 	if len(os.Args) != 2 {
 		os.Exit(1)
 	}
-	ms, err := InitializeMails(context.Background(), "spamkiller")
+	ms, err := InitializeMails(context.Background(), "spamkiller", MailsPath(os.Args[1]))
 	if err != nil {
 		fmt.Println(err)
 	}
