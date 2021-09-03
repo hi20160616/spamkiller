@@ -1,5 +1,4 @@
-// +build linux darwin
-//go:build linux||darwin
+// +build !windows
 
 package configs
 

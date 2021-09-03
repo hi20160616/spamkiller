@@ -1,5 +1,4 @@
 // +build windows
-//go:build windows
 
 package configs
 
