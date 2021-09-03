@@ -1,4 +1,4 @@
-// +build windows
+//go:build windows
 
 package configs
 
@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"golang.org/x/sys/windows/registry"
 )
 
 type Config struct {
