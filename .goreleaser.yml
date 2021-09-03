@@ -25,7 +25,9 @@ archives:
     files:
       - LICENSE
       - README.md
+      - spamkiller.ico
       - AddContextMenu.inf
+      - DelContextMenu.inf
       - DelContextMenu.reg
       - configs/*.json
 checksum:

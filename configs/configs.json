@@ -5,5 +5,5 @@
   "MailTypes":[".eml"],
   "Folder": "./",
   "Result": "./",
-  "DropDaysAgo": 100
+  "DropDaysAgo": 2
 }
