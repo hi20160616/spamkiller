@@ -1,4 +1,4 @@
-//go:build linux||darwin
+//go:build windows
 
 package configs
 
@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"golang.org/x/sys/windows/registry"
 )
 
 type ProjectName string
@@ -49,7 +50,7 @@ func rootPath4Test(cfg *Config) *Config {
 		n = strings.Count(ps[1], string(os.PathSeparator))
 	}
 	for i := 0; i < n; i++ {
-		cfg.RootPath = filepath.Join("../", "./")
+		cfg.RootPath = filepath.Join("..\\", ".\\")
 	}
 	return cfg
 }
@@ -109,12 +110,28 @@ func (c *Config) load() *Config {
 }
 
 func setRootPath(cfg *Config) *Config {
-	cfg.RootPath, cfg.Err = os.Getwd()
+	cfg.RootPath, cfg.Err = readKey()
 	if cfg.Err != nil {
 		return cfg
 	}
+	cfg.RootPath = filepath.Dir(cfg.RootPath)
 	if strings.Contains(os.Args[0], ".test") {
 		return rootPath4Test(cfg)
 	}
 	return cfg
+}
+
+func readKey() (string, error) {
+	k, err := registry.OpenKey(registry.CLASSES_ROOT, `Directory\shell\SpamKiller\command`, registry.QUERY_VALUE)
+	if err != nil {
+		return "", err
+	}
+	defer k.Close()
+
+	s, _, err := k.GetStringValue("")
+	if err != nil {
+		return "", err
+	}
+	s = strings.Split(s, " ")[0]
+	return strings.ReplaceAll(s, "\"", ""), nil
 }
