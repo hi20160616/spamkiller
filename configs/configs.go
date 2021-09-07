@@ -11,8 +11,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+type ProjectName string
+
 type Config struct {
-	ProjectName string
+	ProjectName ProjectName
 	RootPath    string
 	Raw         []byte
 	Debug       bool
@@ -30,7 +32,7 @@ type Config struct {
 	Err error
 }
 
-func NewConfig(projectName string) *Config {
+func NewConfig(projectName ProjectName) *Config {
 	return setRootPath(&Config{ProjectName: projectName}).load()
 }
 
@@ -39,7 +41,7 @@ func rootPath4Test(cfg *Config) *Config {
 	if cfg.Err != nil {
 		return cfg
 	}
-	ps := strings.Split(cfg.RootPath, cfg.ProjectName)
+	ps := strings.Split(cfg.RootPath, string(cfg.ProjectName))
 	n := 0
 	if len(ps) > 1 {
 		n = strings.Count(ps[1], string(os.PathSeparator))
