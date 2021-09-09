@@ -14,8 +14,3 @@ func InitializeMails(ctx context.Context, projectName configs.ProjectName, src M
 	wire.Build(NewLog, NewMails, configs.NewConfig)
 	return &Mails{}, nil
 }
-
-// func InitApp(ctx context.Context, opts *Options) (*app, error) {
-//         wire.Build(appSet)
-//         return nil, nil
-// }

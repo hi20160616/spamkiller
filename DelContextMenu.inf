@@ -1,9 +1,0 @@
-[Version]
-Signature="$Windows NT$"
-
-[DefaultInstall]
-DelReg=SpamKiller
-
-[SpamKiller]
-hkcr,"Directory\shell\SpamKiller",,," Deal with &SpamKiller "
-hkcr,"Directory\shell\SpamKiller\command",,,"""%1%\spamkiller.exe"" ""%%1"""
